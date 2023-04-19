@@ -161,6 +161,7 @@
 <h2 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h2><p>将payload写入一个文本文件，然后从php文件中读取并反序列化：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$s = file_get_contents(&#x27;s.txt&#x27;);</span><br><span class="line">unserialize($s)</span><br></pre></td></tr></table></figure>
 <p>可以找到<code>whoami</code>的执行结果，目的达成。<br>当然实际攻击是将这个payload放在Cookie或者URI中传给Server并由Server中的反序列化函数进行反序列化。</p>
+<p><strong>用今天来想念车大</strong><br><img src="/images/unserialize/seu.jpg"></p>
 
       </section>
 
