@@ -107,7 +107,7 @@
           
             <h2 class="title-sub-wrap new-date">
               <span>最后更新于</span>
-              <time  class="article-updated" datetime="2023-07-30T08:53:43.434Z" itemprop="dateUpdated">2023-07-30</time>
+              <time  class="article-updated" datetime="2023-08-08T12:59:49.805Z" itemprop="dateUpdated">2023-08-08</time>
             </h2>
           
           
@@ -138,7 +138,7 @@
       
       
       <section class="article-entry markdown-body layout-margin content-padding--large soft-size--large soft-style--box">
-        <p>这学期有门信息安全实践，让我和网络安全叙了叙旧。<br>想起车大的小学期，烈日下的南京，空调开得很低的教二，摆弄SeedUbuntu… pwd&#x3D;&#x3D;dees</p>
+        <p>这学期有门信息安全实践，想起车大的小学期，烈日下的南京，空调开得很低的教二，摆弄SeedUbuntu… pwd&#x3D;&#x3D;dees</p>
 <p>&#x2F;&#x2F; 这门课的实验还有点意思 记录一下这个很秀的反序列化漏洞</p>
 <p><a target="_blank" rel="noopener" href="https://github.com/PecholaL/backup/blob/main/CyberSecurity/unserialize.php">文件</a></p>
 <h2 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h2><p><strong>最终目标是执行命令whoami</strong>，从php文件中找到这最后一环。<br><code>GetFlag</code>中的<code>ping_exec()</code>，使用了<code>system()</code>函数，那么设置<code>$name</code>为<code>&quot;1|whoami&quot;</code>；注意这里有个<code>__wakeup()</code>，会给<code>$name</code>赋预设的值，所以需要 <strong>绕过</strong> 它（最后将提到），绕过方法为将序列化字符串中的属性个数设置为大于实际值的量；</p>
