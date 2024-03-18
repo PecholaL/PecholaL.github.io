@@ -107,7 +107,7 @@
           
             <h2 class="title-sub-wrap new-date">
               <span>最后更新于</span>
-              <time  class="article-updated" datetime="2024-03-15T02:24:57.570Z" itemprop="dateUpdated">2024-03-15</time>
+              <time  class="article-updated" datetime="2024-03-18T06:30:07.163Z" itemprop="dateUpdated">2024-03-18</time>
             </h2>
           
           
@@ -138,13 +138,14 @@
       
       
       <section class="article-entry markdown-body layout-margin content-padding--large soft-size--large soft-style--box">
-        <h2 id="论文信息"><a href="#论文信息" class="headerlink" title="论文信息"></a>论文信息</h2><p>原文标题：MAIN-VC: Lightweight Speech Representation Disentanglement for One-shot Voice Conversion<br>作者：Pengcheng Li, Xulong Zhang, Yong Zhang, et al.  </p>
+        <h2 id="论文信息"><a href="#论文信息" class="headerlink" title="论文信息"></a>论文信息</h2><p>原文标题：MAIN-VC: Lightweight Speech Representation Disentanglement for One-shot Voice Conversion<br>作者：Pengcheng Li, Xulong Zhang, Yong Zhang, et al.<br>（收录于IJCNN2024会议集）</p>
 <p><a href="https://pecholal.github.io/MAIN-VC-demo/">MAIN-VC</a><br><a href>pdf</a>(will be shown soon)<br><a target="_blank" rel="noopener" href="https://github.com/PecholaL/MAIN-VC">code</a>  </p>
 <h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><p>语音转换技术根据目标说话人的语料改变源语音的音色，使转换后的语音听上去由目标说话人说出。基于语音表征解耦的方法具有灵活的有点但面临解耦不充分的问题。在本文中，我们针对这些问题提出了一种使用互信息和孪生结构增强模型解耦性能的语音转换模型，最小化说话人身份和说话内容间的互信息，并将具有孪生结构的编码器组合用于更准确的说话人信息和内容信息的解耦。实验结果表明，我们的模型与现有的模型在任意到任意的语音转换任务中表现相当甚至更优秀，此外提出的模型还具有轻量的网络结构。</p>
 <h2 id="模型构架"><a href="#模型构架" class="headerlink" title="模型构架"></a>模型构架</h2><p><img src="/images/main_vc/arch.png"></p>
 <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>主要思路为使用孪生编码器并配合数据增强手段（时序随机）来增强模型对说话人表征学习和提取的能力。引入内容表征和说话人表征间的互信息估计并最小化互信息以促进模型对两种表征的解耦，减少信息冗余。其中互信息估计网络使用了上下界联合估计的手段，及用两种不同的估计方法分别估计互信息的上界和下界，并缩小上下界之间的差异来提升互信息估计的准确性。这样的上下解联合估计方法同时也使互信息估计网络的训练更稳定。</p>
-<p>模型的基本结构为变分自编码器，运用了大量的卷积模块进行表征解耦以及表征融合，模型的轻量化通过一种设计的空洞残差卷积模块来减少参数量。此外，由于孪生结构和互信息的引入，模型的解耦能力不再依赖于对庞大通道数的特征的学习，通过减少模型中间特征的通道数来缩小模型的尺寸。我们在模型的性能和轻量化间维持了较好的平衡，在不到1.5M的参数量下，MAIN-VC能达到与现有方法相当的转换质量并具备快速的推理速度。</p>
-
+<p>模型的基本结构为变分自编码器，需要运用大量的卷积模块进行表征解耦以及表征融合，为了减小模型体积（减少参数量、减短推理时长），MAIN-VC设计了一种空洞残差卷积模块，该模块足够轻量且有良好的感受野，也有望用于其他模型中。此外，由于孪生结构和互信息的引入，模型的解耦能力不再依赖于对庞大中间特征的学习，通过减少模型中间特征的通道数以及整体的网络层数来进一步缩小模型的尺寸。我们在模型的性能和轻量化间维持了较好的平衡，在不到1.5M的参数量下，MAIN-VC能达到与现有方法相当的转换质量并具备快速的推理速度。实验的数据结果详见<a href>论文pdf</a>(will be shown soon) ，转换效果可参考<a href="https://pecholal.github.io/MAIN-VC-demo/">样例页</a> 。</p>
+<h2 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h2><p>如果MAIN-VC对您的研究有帮助，或用作baseline，欢迎引用：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">@inproceedings&#123;li2024mainvc,</span><br><span class="line">  title=&#123;MAIN-VC: Lightweight Speech Representation Disentanglement for One-shot Voice Conversion&#125;,</span><br><span class="line">  author=&#123;Li, Pengcheng and Wang, Jianzong and Zhang, Xulong and Zhang, Yong and Xiao, Jing and Cheng, Ning&#125;,</span><br><span class="line">  booktitle=&#123;2024 International Joint Conference on Neural Networks&#125;,</span><br><span class="line">  pages=&#123;1--7&#125;,</span><br><span class="line">  year=&#123;2024&#125;,</span><br><span class="line">  organization=&#123;IEEE&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
       </section>
 
       
