@@ -105,6 +105,11 @@
             <time  class="article-date" datetime="2024-04-02T01:23:00.000Z" itemprop="datePublished">2024-04-02</time>
           </h2>
           
+            <h2 class="title-sub-wrap new-date">
+              <span>最后更新于</span>
+              <time  class="article-updated" datetime="2024-08-08T09:12:51.338Z" itemprop="dateUpdated">2024-08-08</time>
+            </h2>
+          
           
           <ul class="wrap-list dark">
   
@@ -164,7 +169,11 @@
 <li>切换到main分支： <code>git branch -M main</code></li>
 <li>关联github仓库： <code>git remote add origin git@github.com:PecholaL/Prj.git</code></li>
 <li>先pull： <code>git pull origin main</code></li>
-<li>再push： <code>git push origin main</code></li>
+<li>再push： <code>git push origin main</code><br>更新gitignore后使其生效：</li>
+<li><code>git rm -r --cached .</code></li>
+<li><code>git add .</code></li>
+<li><code>git commit -m &quot;commit by Pechola&quot;</code></li>
+<li><code>git push origin main</code></li>
 </ul>
 <h2 id="gradle"><a href="#gradle" class="headerlink" title="gradle"></a>gradle</h2><ul>
 <li>新建项目： <code>gradle init --type java-application</code></li>
