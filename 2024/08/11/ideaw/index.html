@@ -105,6 +105,11 @@
             <time  class="article-date" datetime="2024-08-11T07:09:00.000Z" itemprop="datePublished">2024-08-11</time>
           </h2>
           
+            <h2 class="title-sub-wrap new-date">
+              <span>最后更新于</span>
+              <time  class="article-updated" datetime="2024-10-01T08:07:08.300Z" itemprop="dateUpdated">2024-10-01</time>
+            </h2>
+          
           
           <ul class="wrap-list dark">
   
@@ -133,25 +138,12 @@
       
       
       <section class="article-entry markdown-body layout-margin content-padding--large soft-size--large soft-style--box">
-        <h2 id="论文信息"><a href="#论文信息" class="headerlink" title="论文信息"></a>论文信息</h2><p>原文：IDEAW: Robust Neural Audio Watermarking with Dual-Embedding  </p>
-<!--作者：Pengcheng Li, Jianzong Wang, Xulong Zhang, Yong Zhang, et al.  
-录用：IJCNN 2024, Yokohama, Japan-->
-
-<p><a href="https://pecholal.github.io/IDEAW-demo/">IDEAW</a><br><a target="_blank" rel="noopener" href="https://arxiv.org/">pdf-coming soon</a><br><a target="_blank" rel="noopener" href="https://github.com/PecholaL/IDEAW">code</a>  </p>
-<h2 id="模型构架"><a href="#模型构架" class="headerlink" title="模型构架"></a>模型构架</h2><p>Coming soon.</p>
-<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>Coming soon.</p>
-<h2 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h2><p>Coming soon.</p>
-<!--如果IDEAW对您的研究有帮助，或用作baseline，欢迎引用：
-```
-@inproceedings{li2024mainvc,
-  title={MAIN-VC: Lightweight Speech Representation Disentanglement for One-shot Voice Conversion},
-  author={Li, Pengcheng and Wang, Jianzong and Zhang, Xulong and Zhang, Yong and Xiao, Jing and Cheng, Ning},
-  booktitle={2024 International Joint Conference on Neural Networks},
-  pages={1--7},
-  year={2024},
-  organization={IEEE}
-}
-```-->
+        <h2 id="论文信息"><a href="#论文信息" class="headerlink" title="论文信息"></a>论文信息</h2><p>原文：IDEAW: Robust Neural Audio Watermarking with Dual-Embedding<br>作者：Pengcheng Li, Xulong Zhang, Jing Xiao, Jianzong Wang<br>录用：EMNLP 2024, Miami, USA</p>
+<p><a href="https://pecholal.github.io/IDEAW-demo/">IDEAW</a><br><a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2409.19627">pdf</a><br><a target="_blank" rel="noopener" href="https://github.com/PecholaL/IDEAW">code</a>  </p>
+<h2 id="模型构架"><a href="#模型构架" class="headerlink" title="模型构架"></a>模型构架</h2><p><img src="/images/ideaw/arch.png"></p>
+<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>基于神经网络的数字音频水印（称为神经音频水印，Neural audio watermarking）的优势在于其鲁棒性不需要依赖于专家经验知识，而是在训练过程中通过模拟从受攻击的音频中提取水印的过程来获得鲁棒性。定位开销是神经音频水印面临的一项挑战，因为在定位过程中会重复地迭代水印提取过程，这涉及到神经网络的前向传播导致的时间开销，IDEAW设计了一种垂直分离定位码和水印消息的双层嵌入水印模型，将定位码与消息分别进行嵌入，更短的定位码可以使用较浅层的神经网络保证不可感知性和提取完整性，实验证明使用浅层网络单独提取定位码䏻有效减少定位过程的时间开销，尤其是在需要更深层的网络保证大承载容量的情况下。此外，IDEAW还优化了作为基础模型的可逆网络在加入攻击模拟后存在的不对称性的问题。  </p>
+<h2 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h2><p>如果IDEAW对您的研究有帮助，或用作baseline，欢迎引用：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">@inproceedings&#123;li2024ideaw,</span><br><span class="line">  title=&#123;IDEAW: Robust Neural Audio Watermarking with Invertible Dual-Embedding&#125;,</span><br><span class="line">  author=&#123;Li, Pengcheng and Zhang, Xulong and Xiao, Jing and Wang, Jianzong&#125;,</span><br><span class="line">  booktitle=&#123;Proceedings of the 2024 Conference on Empirical Methods in Natural Language Processing&#125;,</span><br><span class="line">  pages=&#123;1--7&#125;,</span><br><span class="line">  year=&#123;2024&#125;,</span><br><span class="line">  publisher=&#123;Association for Computational Linguistics&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
       </section>
 
       
